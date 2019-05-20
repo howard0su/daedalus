@@ -53,6 +53,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "SysPSP/UI/SplashScreen.h"
 #include "SysPSP/UI/UIContext.h"
 #include "SysPSP/Utility/Buttons.h"
+#include "SysPSP/Utility/PSPModel.h"
 #include "SysPSP/Utility/PathsPSP.h"
 #include "System/Paths.h"
 #include "System/System.h"
@@ -108,7 +109,6 @@ bool PSP_IS_SLIM = false;
 PSP_MODULE_INFO( DaedalusX64 1.1.7, 0, 1, 1 );
 PSP_MAIN_THREAD_ATTR( PSP_THREAD_ATTR_USER | PSP_THREAD_ATTR_VFPU );
 PSP_HEAP_SIZE_KB(-256);
-
 
 static void DaedalusFWCheck()
 {
@@ -206,7 +206,9 @@ static bool	Initialize()
 	strcpy(gDaedalusExePath, DAEDALUS_PSP_PATH( "" ));
 
 	scePowerSetClockFrequency(333, 333, 166);
+
 	InitHomeButton();
+	pspModelCheck();
 
 	// If (o) is pressed during boot the Emulator will use 32bit
 	// else use default 16bit color mode
