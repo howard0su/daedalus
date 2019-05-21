@@ -9,7 +9,7 @@ PSP_EXPORT_VAR_HASH(module_info)
 PSP_EXPORT_END
 
 # Export our function
-PSP_EXPORT_START(getmodel, 0, 0x4002)
+PSP_EXPORT_START(pspmodel, 0, 0x4001)
 PSP_EXPORT_FUNC_HASH(GetPSPModel)
 
 PSP_EXPORT_END
