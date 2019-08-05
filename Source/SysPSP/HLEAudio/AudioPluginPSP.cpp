@@ -275,13 +275,13 @@ EProcessResult	AudioPluginPSP::ProcessAList()
 	{
 		case APM_DISABLED:
 			result = PR_COMPLETED;
-			break;
+		 	break;
 		case APM_ENABLED_ASYNC:
 			{
 				SHLEStartJob	job;
 				gJobManager.AddJob( &job, sizeof( job ) );
 			}
-			result = PR_STARTED;
+			result = PR_COMPLETED;
 			break;
 		case APM_ENABLED_SYNC:
 			Audio_Ucode();
@@ -337,7 +337,7 @@ void AudioPluginPSP::AddBuffer( u8 *start, u32 length )
 		{
 			SAddSamplesJob	job( mAudioBufferUncached, reinterpret_cast< const Sample * >( start ), num_samples, mFrequency, kOutputFrequency );
 
-			gJobManager.AddJob( &job, sizeof( job ) );
+      gJobManager.AddJob( &job, sizeof( job ) );
 		}
 		break;
 

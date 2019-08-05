@@ -8,7 +8,7 @@
 
 
 PSP_MODULE_INFO("MediaEngine", 0x1006, VERS, REVS);
-PSP_MAIN_THREAD_ATTR(0);
+PSP_THREAD_ATTR_KERNEL();
 
 
 struct me_struct
@@ -130,7 +130,7 @@ k1 = pspSdkSetK1(0);
 	mei->init = 1;
 
 	// start the MediaEngine
-	memcpy((void *)0xbfc00040, me_stub, (int)(me_stub_end - me_stub));
+	memmove((void *)0xbfc00040, me_stub, (int)(me_stub_end - me_stub));
 	_sw((unsigned int)me_loop,  0xbfc00600);	// k0
 	_sw((unsigned int)mei, 0xbfc00604);			// a0
 	sceKernelDcacheWritebackAll();
