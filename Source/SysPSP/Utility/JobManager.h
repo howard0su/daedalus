@@ -56,6 +56,9 @@ public:
 
 	bool			AddJob( SJob * job, u32 job_size );
 
+	int bufferinuse;
+	int bufferinuseme;
+
 private:
 	static u32		JobMain( void * arg );
 
@@ -66,6 +69,10 @@ private:
 	void * 			mJobBufferuncached;
 	void *			mRunBuffer;
 	void * 			mRunBufferuncached;
+	void *			mRunBuffer2;
+	void * 			mRunBufferuncached2;
+	void *			mRunBuffer3;
+	void * 			mRunBufferuncached3;
 	u32				mJobBufferSize {};
 
 	ETaskMode		mTaskMode;

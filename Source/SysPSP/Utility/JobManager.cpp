@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 bool gLoadedMediaEnginePRX {false};
 
 volatile me_struct *mei;
+
 #endif
 CJobManager gJobManager( 2048, TM_ASYNC_ME );
 
@@ -78,7 +79,11 @@ CJobManager::CJobManager( u32 job_buffer_size, ETaskMode task_mode )
 , mJobBufferuncached (MAKE_UNCACHED_PTR(mJobBuffer))
 ,	mRunBuffer( malloc_64( job_buffer_size ) )
 , mRunBufferuncached (MAKE_UNCACHED_PTR(mRunBuffer))
-,	mJobBufferSize( job_buffer_size | 0x40000000  )
+,	mRunBuffer2( malloc_64( job_buffer_size ) )
+, mRunBufferuncached2 (MAKE_UNCACHED_PTR(mRunBuffer2))
+,	mRunBuffer3( malloc_64( job_buffer_size ) )
+, mRunBufferuncached3 (MAKE_UNCACHED_PTR(mRunBuffer3))
+,	mJobBufferSize( job_buffer_size )
 ,	mTaskMode( task_mode )
 ,	mThread( kInvalidThreadHandle )
 ,	mWorkReady( sceKernelCreateSema( "JMWorkReady", 0, 0, 1, 0) )	// Initval is 0 - i.e. no work ready
@@ -148,26 +153,42 @@ u32 CJobManager::JobMain( void * arg )
 }
 
 void CJobManager::Run(){
+	bufferinuseme = 1;
 	while(true){
+
 	sceKernelWaitSema( mWorkReady, 1, nullptr );
+
+
+	if(bufferinuseme > 3){
+		bufferinuseme = 1;
+	}
+
+	if(bufferinuseme == 1 ){
+	memcpy( mJobBufferuncached, mRunBuffer, mJobBufferSize);
+	}
+	if(bufferinuseme == 2){
+	memcpy( mJobBufferuncached, mRunBuffer2, mJobBufferSize);
+	}
+	if(bufferinuseme == 3)
+	{
+	memcpy( mJobBufferuncached, mRunBuffer3, mJobBufferSize);
+	}
+
+	SJob *	run( static_cast< SJob * >( mJobBufferuncached ) );
+
 	sceKernelDcacheWritebackInvalidateAll();
 
-	SJob *	run( static_cast< SJob * >( mRunBufferuncached ) );
-	sceKernelDcacheWritebackInvalidateAll();
-	// Start the job on the ME - inv_all dcache on entry, wbinv_all on exit
-	//BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL);
-	if(BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL) < 0){
-		WaitME(mei);
-		BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL);
-	}
-	if(sizeof(run) > 15)
-	WaitME(mei);
-	if(sizeof(run) < 15){
-	if(!CheckME(mei))
-	sceKernelDelayThread(4 * 1000);
-	if(!CheckME(mei))
-	WaitME(mei);
-	}
+	if(BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL) < 0)
+	run->DoJob( run );
+
+
+	run->FiniJob( run );
+
+	bufferinuseme++;
+
+
+
+
 }
 }
 
@@ -191,11 +212,37 @@ bool CJobManager::AddJob( SJob * job, u32 job_size )
 		return true;
 	}
 
-	memmove( mRunBufferuncached, job, job_size );
+	if( mThread == kInvalidThreadHandle ){
+	 bufferinuse = 1;
+	}
 
+	if(bufferinuse > 3){
+		bufferinuse = 1;
+	}
 
+	if(bufferinuse == 1){
+	memcpy( mRunBuffer, job, job_size );
+
+	}
+	if(bufferinuse == 2){
+	memcpy( mRunBuffer2, job, job_size );
+
+	}
+	if(bufferinuse == 3)
+	{
+	memcpy( mRunBuffer3, job, job_size );
+
+	}
+
+	if( mThread == kInvalidThreadHandle )
 	CJobManager::Start();
+
 	sceKernelSignalSema( mWorkReady, 1 );
+
+	bufferinuse++;
+	//printf("%d",bufferinuse);
+	//printf("\n");
+
 
 	return success;
 }

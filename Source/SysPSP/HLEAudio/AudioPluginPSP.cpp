@@ -240,15 +240,15 @@ public:
 	static int DoHLEStartStatic( SJob * arg )
 	{
 		 SHLEStartJob *  job( static_cast< SHLEStartJob * >( arg ) );
-		 job->DoHLEStart();
-     return 0;
+
+     return job->DoHLEStart();
 	}
 
 	static int DoHLEFinishedStatic( SJob * arg )
 	{
 		 SHLEStartJob *  job( static_cast< SHLEStartJob * >( arg ) );
-		 job->DoHLEFinish();
-     return 0;
+
+     return job->DoHLEFinish();
 	}
 
 	int DoHLEStart()
@@ -281,7 +281,7 @@ EProcessResult	AudioPluginPSP::ProcessAList()
 				SHLEStartJob	job;
 				gJobManager.AddJob( &job, sizeof( job ) );
 			}
-			result = PR_COMPLETED;
+			result = PR_STARTED;
 			break;
 		case APM_ENABLED_SYNC:
 			Audio_Ucode();
