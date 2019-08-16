@@ -327,7 +327,7 @@ void AudioPluginPSP::AddBuffer( u8 *start, u32 length )
 		StartAudio();
 
 	u32 num_samples {length / sizeof( Sample )};
-
+  num_samples = num_samples | 0x40000000;
 	switch( gAudioPluginEnabled )
 	{
 	case APM_DISABLED:
