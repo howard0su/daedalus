@@ -154,10 +154,12 @@ u32 CJobManager::JobMain( void * arg )
 
 void CJobManager::Run(){
 	bufferinuseme = 1;
+	int jobz = 0;
 	while(true){
 
 	sceKernelWaitSema( mWorkReady, 1, nullptr );
-
+  jobz++;
+	while(jobz > 0){
 
 	if(bufferinuseme > 3){
 		bufferinuseme = 1;
@@ -178,14 +180,19 @@ void CJobManager::Run(){
 
 	sceKernelDcacheWritebackInvalidateAll();
 
-	if(BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL) < 0)
-	run->DoJob( run );
+	BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL);
+	while(!CheckME(mei))
+	ThreadYield();
+
+	//if(BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL) < 0)
+	//run->DoJob( run );
 
 
-	run->FiniJob( run );
+	//run->FiniJob( run );
 
 	bufferinuseme++;
-
+	jobz--;
+}
 
 
 
