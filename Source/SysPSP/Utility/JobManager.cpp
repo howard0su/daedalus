@@ -38,7 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef DAEDALUS_PSP_USE_ME
 bool gLoadedMediaEnginePRX {false};
 
-volatile me_struct *mei;
+me_struct *mei;
 
 #endif
 CJobManager gJobManager( 2048, TM_ASYNC_ME );
@@ -49,8 +49,8 @@ bool InitialiseJobManager()
 
 	if( CModule::Load("mediaengine.prx") < 0 )	return false;
 
-	mei = (volatile struct me_struct *)malloc_64(sizeof(struct me_struct));
-	mei = (volatile struct me_struct *)(MAKE_UNCACHED_PTR(mei));
+	mei = ( struct me_struct *)malloc_64(sizeof(struct me_struct));
+	mei = ( struct me_struct *)(MAKE_UNCACHED_PTR(mei));
 	sceKernelDcacheWritebackInvalidateAll();
 
 	if (InitME(mei) == 0)
@@ -153,48 +153,19 @@ u32 CJobManager::JobMain( void * arg )
 }
 
 void CJobManager::Run(){
-	bufferinuseme = 1;
 	int jobz = 0;
-	while(true){
 
-	sceKernelWaitSema( mWorkReady, 1, nullptr );
-  jobz++;
-	while(jobz > 0){
-
-	if(bufferinuseme > 3){
-		bufferinuseme = 1;
-	}
-
-	if(bufferinuseme == 1 ){
-	memcpy( mJobBufferuncached, mRunBuffer, mJobBufferSize);
-	}
-	if(bufferinuseme == 2){
-	memcpy( mJobBufferuncached, mRunBuffer2, mJobBufferSize);
-	}
-	if(bufferinuseme == 3)
-	{
-	memcpy( mJobBufferuncached, mRunBuffer3, mJobBufferSize);
-	}
-
+	while(jobz == 0){
+	//sceKernelWaitSema( mWorkReady, 1, nullptr );
 	SJob *	run( static_cast< SJob * >( mJobBufferuncached ) );
 
 	sceKernelDcacheWritebackInvalidateAll();
 
 	BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL);
 	while(!CheckME(mei))
-	ThreadYield();
-
-	//if(BeginME( mei, (int)run->DoJob, (int)run, -1, NULL, -1, NULL) < 0)
-	//run->DoJob( run );
-
-
-	//run->FiniJob( run );
-
-	bufferinuseme++;
-	jobz--;
-}
-
-
+	sceKernelDelayThread(200);
+	//sceKernelSignalSema( mWorkReady, 1 );
+	sceKernelWaitSema( mWorkReady, 1, nullptr );
 
 }
 }
@@ -219,37 +190,10 @@ bool CJobManager::AddJob( SJob * job, u32 job_size )
 		return true;
 	}
 
-	if( mThread == kInvalidThreadHandle ){
-	 bufferinuse = 1;
-	}
-
-	if(bufferinuse > 3){
-		bufferinuse = 1;
-	}
-
-	if(bufferinuse == 1){
-	memcpy( mRunBuffer, job, job_size );
-
-	}
-	if(bufferinuse == 2){
-	memcpy( mRunBuffer2, job, job_size );
-
-	}
-	if(bufferinuse == 3)
-	{
-	memcpy( mRunBuffer3, job, job_size );
-
-	}
+	memcpy( mJobBufferuncached, job, job_size );
 
 	if( mThread == kInvalidThreadHandle )
 	CJobManager::Start();
-
 	sceKernelSignalSema( mWorkReady, 1 );
-
-	bufferinuse++;
-	//printf("%d",bufferinuse);
-	//printf("\n");
-
-
 	return success;
 }
