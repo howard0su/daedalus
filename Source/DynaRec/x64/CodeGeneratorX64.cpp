@@ -210,12 +210,12 @@ void	CCodeGeneratorX64::Initialise( u32 entry_address, u32 exit_address, u32 * h
 	MOVI(FIRST_PARAM_REG_CODE, entry_address);
 	CALL( CCodeLabel( (void*)LogFragmentEntry ) );
 #endif
-	// if( hit_counter != NULL )
-	// {
-	// 	MOV_REG_MEM( RAX_CODE, hit_counter );
-	// 	ADDI( RAX_CODE, 1 );
-	// 	MOV_MEM_REG( hit_counter, RAX_CODE );
-	// }
+	if( hit_counter != NULL )
+	{
+		MOV_REG_MEM( RAX_CODE, hit_counter );
+		ADDI( RAX_CODE, 1 );
+		MOV_MEM_REG( hit_counter, RAX_CODE );
+	}
 
 	// p_base/span_list ignored for now
 }
