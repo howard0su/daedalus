@@ -102,14 +102,14 @@ bool Save_Reset()
 		FILE * fp = fopen(gSaveFileName.string().c_str(), "rb");
 		if (fp != nullptr)
 		{
-			DBGConsole_Msg(0, "Loading MemPack from [C%s]", gSaveFileName.c_str());
+			DBGConsole_Msg(0, "Loading MemPack from [C%s]", gSaveFileName.string().c_str());
 			fread(g_pMemoryBuffers[MEM_MEMPACK], MemoryRegionSizes[MEM_MEMPACK], 1, fp);
 			fclose(fp);
 			gMempackDirty = false;
 		}
 		else
 		{
-			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gSaveFileName.c_str());
+			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gSaveFileName.string().c_str());
 			InitMempackContent();
 			gMempackDirty = true;
 		}
